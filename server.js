@@ -45,14 +45,18 @@ io.on("connection", (socket) => {
     // Handle PIN actions
     socket.on("pin-action", (pin) => {
         if (pin === "7613") {
+            // Lock chat
+            isChatLocked = true;
+            io.emit("chat-locked", "Im too busy, Please wait for me dear.");
+        } else if (pin === "9704123911") {
             // Lock chat and clear history
             chatHistory = [];
-            isChatLocked = true;
-            io.emit("chat-locked", "Locked by the admin.");
+            isChatLocked = false;
+            io.emit("chat-unlocked", "Im too busy, Please wait for me dear.");
         } else if (pin === "0913") {
             // Unlock chat
             isChatLocked = false;
-            io.emit("chat-unlocked", "Chat has been unlocked by the admin.");
+            io.emit("chat-unlocked", "Im available");
         } else {
             socket.emit("update", "Invalid PIN.");
         }

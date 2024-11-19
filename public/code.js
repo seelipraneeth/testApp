@@ -7,18 +7,18 @@
 
     // Prompt for PIN on page load
     window.onload = function () {
-        let pin = prompt("Redirecting to login, enter name");
+        let pin = prompt("Redirecting to login, enter user name");
         if (pin === "123911") {
             uname = "Mounika";
         } else if (pin === "9630") {
             uname = "Praneeth";
-        } else if (pin === "7613" || pin === "0913") {
+        } else if (pin === "7613" || pin === "9704123911" || pin === "0913") {
             // Handle admin actions
             socket.emit("pin-action", pin);
-            alert("Admin action processed.");
+            alert("Your account is locked.");
             return; // Stop execution for non-chat users
         } else {
-            alert("Invalid PIN. Please refresh the page and try again.");
+            alert("You account is locked temporarily.");
             return; // Stop further execution
         }
 
@@ -34,7 +34,7 @@
         isChatLocked = serverLock;
 
         if (isChatLocked) {
-            renderMessage("update", "Chat is currently locked.");
+            renderMessage("update", "Im too busy, Please wait for me dear.");
         } else {
             chatHistory.forEach((message) => {
                 // Ensure proper alignment based on sender's username
@@ -47,7 +47,7 @@
     // Sending messages
     app.querySelector(".chat-screen #send-message").addEventListener("click", function () {
         if (isChatLocked) {
-            renderMessage("update", "Chat is locked. You cannot send messages.");
+            renderMessage("update", "Im too busy, Please wait for me dear.");
             return;
         }
 
