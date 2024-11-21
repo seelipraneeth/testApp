@@ -110,7 +110,7 @@
         this.textContent = isMuted ? "Unmute" : "Mute";
     });
 
-    // Receiving updates
+    // Receiving updates now
     socket.on("update", function (update) {
         renderMessage("update", update);
     });
