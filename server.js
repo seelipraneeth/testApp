@@ -6,7 +6,7 @@ const server = require("http").createServer(app);
 const mongoose = require('mongoose');
 const io = require("socket.io")(server);
 
-mongoose.connect('mongodb+srv://admin:XF26rW90WaOyEU8v@amps-ai.4mdpm.mongodb.net/billnest?retryWrites=true&w=majority&appName=amps-ai')
+mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.log("MongoDB connection error:", err));
 
