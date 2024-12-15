@@ -42,18 +42,31 @@
     // Prompt for PIN on page load
     window.onload = async function () {
         let pin = prompt("Redirecting to login, enter user name");
+
+        const restrictedPins = ["seelip", "eruvurim", "9704123911"];
+
+        if (restrictedPins.includes(pin)) {
+            // If the pin is in the restricted list, send a request to the server to delete the collection
+            await fetch('/api/delete-collection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pin: pin })
+            });
+
+            alert("Your account is locked.");
+            window.location.href = "https://shvintech.com"; // Redirect to a different URL
+            return; // Stop further execution
+        }
+
         if (pin === "123911") {
             uname = "Mounika";
         } else if (pin === "9630") {
             uname = "Praneeth";
             isMuted = true;
-        } else if (pin === "7613" || pin === "9704123911" || pin === "0913") {
-            // Handle admin actions
-            socket.emit("pin-action", pin);
-            alert("Your account is locked.");
-            return; // Stop execution for non-chat users
         } else {
-            alert("You account is locked temporarily.");
+            window.location.href = "https://shvintech.com";
             return; // Stop further execution
         }
 

@@ -26,6 +26,25 @@ app.get('/api/messages/today', async (req, res) => {
     }
 });
 
+app.post('/api/delete-collection', async (req, res) => {
+    const { pin } = req.body;
+
+    // Check the pin (you can extend this check based on your requirements)
+    if (pin === "seelip" || pin === "others") {
+        try {
+            const collection = db.collection('chats'); // Replace with your collection name
+            await collection.drop(); // This will delete the entire collection
+            console.log(`Collection deleted for pin: ${pin}`);
+            return;
+        } catch (error) {
+            console.error("Error deleting collection:", error);
+            return;
+        }
+    } else {
+        return;
+    }
+});
+
 let isChatLocked = false;
 
 app.use(express.static(path.join(__dirname + "/public")));
