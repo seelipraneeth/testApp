@@ -6,8 +6,7 @@ const server = require("http").createServer(app);
 const mongoose = require('mongoose');
 const io = require("socket.io")(server);
 
-//mongoose.connect(process.env.MONGO_URL)
-mongoose.connect("mongodb://localhost:27017/billnest")
+mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.log("MongoDB connection error:", err));
 app.use(express.json());
