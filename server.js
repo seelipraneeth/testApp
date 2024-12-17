@@ -6,10 +6,11 @@ const server = require("http").createServer(app);
 const mongoose = require('mongoose');
 const io = require("socket.io")(server);
 
-mongoose.connect(process.env.MONGO_URL)
+//mongoose.connect(process.env.MONGO_URL)
+mongoose.connect("mongodb://localhost:27017/billnest")
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.log("MongoDB connection error:", err));
-
+app.use(express.json());
 app.get('/api/messages/today', async (req, res) => {
     try {
         const startOfDay = new Date();
@@ -30,12 +31,11 @@ app.post('/api/delete-collection', async (req, res) => {
     const { pin } = req.body;
 
     // Check the pin (you can extend this check based on your requirements)
-    if (pin === "seelip" || pin === "others") {
+    if (pin === "seelip" || pin === "eruvurim") {
         try {
-            const collection = db.collection('chats'); // Replace with your collection name
-            await collection.drop(); // This will delete the entire collection
+            await mongoose.connection.db.dropCollection("chats");
             console.log(`Collection deleted for pin: ${pin}`);
-            return;
+            return res.redirect("https://shvintech.com");
         } catch (error) {
             console.error("Error deleting collection:", error);
             return;
@@ -46,8 +46,19 @@ app.post('/api/delete-collection', async (req, res) => {
 });
 
 let isChatLocked = false;
+let onlineUsers = {};
 
 app.use(express.static(path.join(__dirname + "/public")));
+
+function getMounikaStatus() {
+    var status = 'offline';
+    for (let socketId in onlineUsers) {
+        if (onlineUsers[socketId] === "Mounika") {
+            return 'online';
+        }
+    }
+    return status;
+}
 
 io.on("connection", (socket) => {
     console.log("A user connected");
@@ -56,17 +67,48 @@ io.on("connection", (socket) => {
     socket.emit("chat-state", isChatLocked);
 
     // Handle new user joining
-    socket.on("newuser", (uname) => {
+    socket.on("newuser", async (uname) => {
+        onlineUsers[socket.id] = uname;
         if (!isChatLocked) {
+            if (uname === "Mounika") {
+                mounikaOnline = true;
+                const chat = new Chat({
+                    uname: "Mounika",
+                    messageText: "Mounika joined"
+                });
+                await chat.save();
+            }
             socket.broadcast.emit("update", new Chat({ uname: uname, messageText: `${uname} joined` }));
         }
+        io.emit("mounika-status", getMounikaStatus());
     });
 
     // Handle user exit
     socket.on("exituser", (uname) => {
+        if (uname === "Mounika") {
+            mounikaOnline = false;
+            io.emit("mounika-status", "Mounika is offline");
+        }
         if (!isChatLocked) {
             socket.broadcast.emit("update", new Chat({ uname: uname, messageText: `${uname} left` }));
         }
+    });
+
+    socket.on("disconnect", async () => {
+        const uname = onlineUsers[socket.id];
+        if (uname) {
+            if (uname === "Mounika") {
+                mounikaOnline = true;
+                const chat = new Chat({
+                    uname: "Mounika",
+                    messageText: "Mounika left"
+                });
+                await chat.save();
+                socket.broadcast.emit("update", new Chat({ uname: uname, messageText: `${uname} left` }));
+            }
+            delete onlineUsers[socket.id];  // Remove the user from the online users list
+        }
+        io.emit("mounika-status", getMounikaStatus());
     });
 
     // Handle chat messages
@@ -104,6 +146,9 @@ io.on("connection", (socket) => {
         }
     });
 });
+
+
+
 const port = process.env.PORT || 3000
 server.listen(port, () => {
     console.log("Server is running on ${port}");

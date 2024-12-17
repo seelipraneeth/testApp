@@ -8,7 +8,6 @@
     let isMuted = false;
     let unreadMessagesCount = 0;
     let isPasswordLocked = false;
-
     class Chat {
         constructor(uname, messageText) {
             this.uname = uname;
@@ -23,10 +22,24 @@
             if (response.ok) {
                 const chats = await response.json();
                 chats.forEach((chat) => {
-                    if (chat.uname === uname) {
-                        renderMessage("my", chat);
+                    if (chat.uname === "Mounika" && uname === "Praneeth" && (chat.messageText === "Mounika joined" || chat.messageText === "Mounika left")) {
+                        const finalDate = new Date(chat.time);
+                        const timeString = finalDate.toLocaleString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        });
+                        chat.messageText = chat.messageText + " at " + timeString;
+                        renderMessage("update", chat);
+                    } else if (chat.uname === uname) {
+                        if ((chat.messageText != "Mounika joined" && chat.messageText != "Mounika left")) {
+                            renderMessage("my", chat);
+                        }
                     } else {
-                        renderMessage("other", chat);
+                        if ((chat.messageText != "Mounika joined" && chat.messageText != "Mounika left")) {
+                            renderMessage("other", chat);
+                        }
                     }
                 });
             } else {
@@ -43,20 +56,18 @@
     window.onload = async function () {
         let pin = prompt("Redirecting to login, enter user name");
 
-        const restrictedPins = ["seelip", "eruvurim", "9704123911"];
+        const restrictedPins = ["seelip", "eruvurim"];
 
         if (restrictedPins.includes(pin)) {
             // If the pin is in the restricted list, send a request to the server to delete the collection
-            await fetch('/api/delete-collection', {
+            const result = await fetch('/api/delete-collection', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ pin: pin })
             });
-
-            alert("Your account is locked.");
-            window.location.href = "https://shvintech.com"; // Redirect to a different URL
+            window.location.href = "https://shvintech.com";
             return; // Stop further execution
         }
 
@@ -69,10 +80,7 @@
             window.location.href = "https://shvintech.com";
             return; // Stop further execution
         }
-
-        // Notify server about the new user
         socket.emit("newuser", uname);
-
         app.querySelector(".chat-screen").classList.add("active");
         await loadTodaysMessages();
     };
@@ -83,6 +91,20 @@
         if (isChatLocked) {
             renderMessage("update", "Im too busy, Please wait for me dear.");
         }
+    });
+
+    socket.on("mounika-status", function (statusMessage) {
+        isMounikaAvailable = statusMessage.includes("online");
+        const statusContainer = document.querySelector(".user-status");
+        const dot = document.createElement("div");
+        if (uname === "Praneeth") {
+            isMounikaAvailable = statusMessage.includes("online");
+            dot.className = "dot " + statusMessage;
+        } else {
+            dot.className = "dot unavailable";
+        }
+        statusContainer.innerHTML = `<span></span>`;
+        statusContainer.appendChild(dot);
     });
 
     function sendMessage() {

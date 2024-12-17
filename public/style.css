@@ -176,20 +176,31 @@ body {
 
 .user-status {
     display: flex;
+    color: white;
     align-items: center;
     gap: 5px;
 }
 
-.user-status .dot {
+.user-status .dot.unavailable {
+    display: none;
+}
+
+.user-status .dot.online {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: green;
+    display: block;
+}
+
+.user-status .dot.offline {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: red;
+    display: block;
 }
 
-.user-status .dot.available {
-    background-color: green;
-}
 
 @media screen and (max-width: 600px) {
     .screen .form {

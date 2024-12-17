@@ -10,8 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^4.21.1",
-    "mongoose": "^8.8.2",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.1",
     "socket.io": "^4.8.1",
     "testapp": "file:"
   }
